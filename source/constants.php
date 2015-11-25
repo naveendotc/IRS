@@ -4,5 +4,3 @@ define("USER","root");
 define("PASSWORD","dotc");
 define("DATABASE","irs");
 ?>
-
-

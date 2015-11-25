@@ -43,7 +43,7 @@
   </script>
 	<body background="../images/1.png">
 		
-		<form class="form-horizontal" role="form" method="post" action="filterRegister.php" onsubmit="return validateForm()" name="register">
+		<form class="form-horizontal" role="form" method="post" action="validateRegister.php" onsubmit="return validateForm()" name="register">
 			<div class="col-md-4"></div>
 			<div class="container-fluid">
 				<div class="col-md-4">
@@ -56,6 +56,14 @@
 						  	<input class="form-control" type="text" placeholder="Full Name" name="fname" required>
 						</div>
 						<p id="fname" style="color:red"></p>
+						<br>
+						<div class="input-group input-group-lg">
+						 	<span class="input-group-addon">
+						    	<span class="glyphicon glyphicon-user"></span>
+						  	</span>
+						  	<input class="form-control" type="text" placeholder="User Id" name="uid" required>
+						</div>
+						<p id="uid" style="color:red"></p>
 						<br>
 						<div class="input-group input-group-lg">
 						 	<span class="input-group-addon">
