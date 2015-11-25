@@ -1,4 +1,4 @@
-<?php include("header.php"); include("constants.php");  ?>
+<?php include("constants.php"); include("header.php"); ?>
 
 
 <script type="text/javascript">
@@ -11,12 +11,12 @@
 </script>
 <script type="text/javascript">
     $(document).ready(function(){
-      $("li").mouseover(function(){
-      	$(this).addClass("active");
-      });
-      $("li").mouseout(function(){
-      	$(this).removeClass("active");
-      });
+	$("li").mouseover(function(){
+              $(this).addClass("active");
+	      });
+	      $("li").mouseout(function(){
+	              $(this).removeClass("active");
+	      });
       $('[data-toggle="popover"]').popover();
       $("#issue_btn").click(function(){
         $("#raise_issue").show(200);
@@ -66,27 +66,22 @@
 </script>
 
 <body>
-
 <?php if(isset($_COOKIE["uid"])) {
 	
 	// extract $uid and Set Connection to MySQL server
 	$uid = $_COOKIE["uid"];
 	$conn = mysqli_connect(DBSERVER, USER, PASSWORD, DATABASE);
 	$query = "";
-?>
 
-
-<?php
 	// start Welcome and Sign Out button
 	$query = "SELECT full_name from users where user_id='$uid'";
 	$result = $conn->query($query);
 	if($result->num_rows == 1) {
 		$row = $result->fetch_assoc();
 		$full_name = $row["full_name"];
-		//echo ("Welcome ".$full_name);
-	}
+		// echo ("Welcome ".$full_name);
 
-	 else {
+	} else {
 		echo ("Error occurred :( ");
 	} // Done with Welcome and Sign Out button
 	
@@ -103,7 +98,6 @@
 	if( !($privilege == 0 || $privilege == 1 || $privilege == 2)) { echo "Invalid Privilege!! <br>"; }
 
 ?>
-
 <div class="bs-example" style="margin-top: -20px;">
     <nav role="navigation" class="navbar navbar-default">
         <div class="navbar-header">
@@ -118,7 +112,7 @@
         <div id="navbarCollapse" class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
                 <li><a href="#" style="display:none" id="issue_btn">Raise New Issue</a></li>
-                <li><a href="#" id='profile'>Edit Profile</a></li>
+                <!--<li><a href="#" id='profile'>Edit Profile</a></li>-->
                 <li><a href="user.php" id='userview' style="display:none">User View</a></li>
                 <li><a href="solver.php" id='solverview' style="display:none">Solver View</a></li>
                 <li><a href="manager.php" id='managerview' style="display:none">Manager View</a></li>
@@ -131,30 +125,6 @@
         </div>
     </nav>
 </div>
-
-<!--
-<div class="bs-example" style="margin-top: -20px;">       
-     		<ul class="nav nav-tabs">
-     		  <li style="display:none"><a href="#" id='request_prev'>Request for Solver Privileges</a></li>
-              <li style="display:none"><a href="#" id="issue_btn">Raise New Issue</a></li>
-              <li class="dropdown">
-			    <a class="dropdown-toggle"
-			       data-toggle="dropdown"
-			       href="#">
-			        Switch to
-			        <b class="caret"></b>
-			      </a>
-			    <ul class="dropdown-menu">
-			      <li><a href="user.php">User View</a></li>
-			      <li><a href="solver.php">Solver View</a></li>
-			    </ul>
-			  </li>
-			  <li style"float: right;"><a><?php echo ("Welcome ".$full_name) ?></a></li>
-              <li style="float: right;width:100px;"><a href="logout.php">Sign Out</a></li>
-			</ul>  
-</div>
--->
-
 <?php
 	// Request Solver Privilege button
 	
@@ -173,27 +143,43 @@
 	
 	
 ?>
-<div class="container">
+
+	<div class="container">
+        
+
+<?php
+	// Request Solver Privilege button
+	if($privilege == 0) // 0 => user only (1 => user+solver, 2 => user+solver+manager)
+	{
+		/*echo("<li><button type='button' class='btn btn-primary' id='request_priv'>
+		Request for solver privileges
+		</button></li>");*/
+		echo("<script>document.getElementById('request_prev').style.display='';</script>");
+	}
+	
+		
+	
+	
+?>
+		
 
 	<div class="col-md-12">
-		<!--<button type="button" class="btn btn-primary" id="issue_btn"> 
-		Register New Issue
-		</button>-->
+		
 
 		
 
 		<!-- Initially Hidden: Form for Register New Issue -->
 		<div class="row">
-		<div class="col-md-7">
+		<div class="col-md-12">
 		<br>
 		<div id="raise_issue" style="display:none">
 		<div class="panel panel-default">
 			<div class="panel-heading">
-			<h3 class="panel-title"><center>Register New Issue</center></h3>
+			<h3 class="panel-title"><center><b>Register New Issue</b></center></h3>
                 	</div>
 		<div class="panel-body">
 		<form action="user.php" method="post" onsubmit="return validate()">
-			<input type="text" id="subject" class="form-control" placeholder="Subject" name="subject" style="width:490px" required><br>
+			<input type="text" id="subject" class="form-control" placeholder="Subject" name="subject" style="width:100%" required><br>
 			<select class="selectpicker;btn btn-primary" name="issue_type" id = "new_issue_type">
 				<option selected disabled value="Select Type of Issue">Select Type of Issue</option>
 				<option value="Type-1">Type-1</option>
@@ -202,10 +188,10 @@
 				<option value="DoNotKnow">Do Not Know</option>
 			</select><p id="p2" style="color:red"></p>
 			
-			<!-- From MySQL table -->
+			<!-- Types from MySQL table -->
 
-			<br><br>
-			<textarea class="form-control" name="description" id="textarea" style="width:490px; height:150px;" placeholder="Description" required></textarea><br>
+			<br>
+			<textarea class="form-control" name="description" id="textarea" style="width:100%; height:150px;" placeholder="Description" required></textarea><br>
 			<div align="center">
 				<button type="button" class="btn btn-default" id="close">Close</button> <!-- Close button should clear -->
 				<input type="submit" class="btn btn-primary" name="report" value="Submit" id="submit"/>
@@ -229,6 +215,8 @@
 			$description = $_POST["description"];
 			$status = 0; // 0 => New and Unassigned (Being Processed)
 			$timeNow = date('Y-m-d H:i:s');
+
+			
 			
 			
 			// Decide who to assign to
@@ -247,15 +235,22 @@
 				// $currDelegTo = $r[0];
 				$currDelegTo = "dotc";
 
-
 			}
 			// Decided who to assign to
 
+
+			$hist_timestamp = $timeNow.";";
+			$hist_status = $status.";";
+			$hist_delegatee = $currDelegTo.";";
+			$hist_comment = "ISSUE REGISTERED BY ".$uid.";";
 			
 			$query1 = "INSERT into issues (user_id, raisedTime, subject, type,
-							description, issue_status, currDelegTo_uid) 
+							description, issue_status, currDelegTo_uid, prevComment,
+							issueHist_TimeStamps, issueHist_Statuses,
+							issueHist_Delegatees, issueHist_Comments) 
 				values('$uid','$timeNow', '$subject','$type',
-							'$description','$status','$currDelegTo')";
+							'$description','$status','$currDelegTo', 'NEW',
+							'$hist_timestamp', '$hist_status', '$hist_delegatee', '$hist_comment')";
 
 			if(!isset($conn)) {
 				echo "<h2><center><font color='red'>
@@ -290,6 +285,7 @@
 				// Increment curr issues to deleg to solver
 				$query3 = "UPDATE CurrentIssuesWithSolvers SET cur_issues='$new_cur_issues' WHERE user_id='$currDelegTo'";
 				$result = mysqli_query($conn, $query3);
+				
 				} else {
 					echo("Unexpected Failure. Please try again.");
 				}
@@ -323,31 +319,36 @@
 		<table class='table table-hover'>
 <?php
 	if (mysqli_num_rows($result) == 0) {
-		echo ("<tr><th>All Issues Registered by You have been Resolved/Closed.</th></tr>");
+		echo ("<tr><th>All Issues Registered by You have been Resolved/Closed</th></tr>");
 	} else {
 ?>
 		
 		<tr>
 			<th>Issue Id</th><th>Subject</th><th>Registered On</th><th>Currently Assigned To</th><th>More</th>
-			<!-- More = Description, Issue History, Escalate -->
+			<!-- More = Description, Issue History, Escalate (advanced feature-optional) -->
 		</tr>
 <?php
 		while($r = mysqli_fetch_array($result, MYSQL_NUM)) {
 			echo ("
 		<tr>
-			<td>$r[0]</td><td>$r[3]</td><td>$r[2]</td><td>$r[7]</td>
+			<td>$r[0]</td><td>$r[3]<br>
+				<button type='button' class='btn btn-primary' title='Description' data-toggle='popover' data-trigger='focus' data-content='$r[5]'>Description</button>
+				</td><td>$r[2]</td><td>$r[7]</td>
 			<td>
-				<ul>
-				<li><button type='button' class='btn btn-primary' title='Description' data-toggle='popover' data-trigger='focus' data-content='$r[5]'>Description</button></li>
-				<li><a href='#'>Issue_History</a></li>
-				<li>
+				<form method=post name='historyform' action='history.php'>
+					<input type=hidden name='issueID' value='$r[0]'>
+					<input type=hidden name='userID' value='$uid'>
+					<input type=hidden name='landingFrom' value='user'>
+					<input type=submit value='Issue History' class='btn btn-primary'>
+					<!--<input type='image' src='../images/description.png' border='0' alt='Submit' style='width: 10em;height: 4em;' />-->
+				</form>
+				<!-- <li>
 					<form method=post name='escalateform' action='escalate.php'>
 					<input type=hidden name='issueID' value='$r[0]'>
 					<input type=hidden name='userID' value='$uid'>
 					<input type=submit value='Escalate' class='btn btn-primary'>
 					</form>
-				</li>
-				</ul>
+				</li> -->
 			</td>
 		</tr>
 			");
@@ -386,11 +387,20 @@
 		</tr>
 <?php
 		while($r = mysqli_fetch_array($result, MYSQL_NUM)) {
-			if ($r[6] == 0) $stat = "Being processed";
+			if ($r[6] == 0) $stat = "Pending";
 			else $stat = "Resolved";
 			echo ("
 		<tr>
-			<td>$r[0]</td><td>$r[3]</td><td>$r[2]</td><td>$stat</td><td>More</td>
+			<td>$r[0]</td><td>$r[3]<br>
+				<button type='button' class='btn btn-primary' title='Description' data-toggle='popover' data-trigger='focus' data-content='$r[5]'>Description</button>
+				</td><td>$r[2]</td><td>$stat</td><td>
+					<form method=post name='historyform2' action='history.php'>
+					<input type=hidden name='issueID' value='$r[0]'>
+					<input type=hidden name='userID' value='$uid'>
+					<input type=hidden name='landingFrom' value='user'>
+					<input type=submit value='Issue History' class='btn btn-primary'>
+					</form>
+				</td>
 		</tr>
 			");
 		}

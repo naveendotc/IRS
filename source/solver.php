@@ -1,8 +1,10 @@
 <?php include("constants.php"); include("header.php"); ?>
 
+
+
 <script type="text/javascript">
     $(document).ready(function(){
-    	$("li").mouseover(function(){
+	$("li").mouseover(function(){
       	$(this).addClass("active");
       });
       $("li").mouseout(function(){
@@ -90,6 +92,7 @@
 
 ?>
 
+
 <div class="bs-example" style="margin-top: -20px;">
     <nav role="navigation" class="navbar navbar-default">
         <div class="navbar-header">
@@ -104,7 +107,7 @@
         <div id="navbarCollapse" class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
                 <li><a href="#" style="display:none" id="issue_btn">Raise New Issue</a></li>
-                <li><a href="#" id='profile'>Edit Profile</a></li>
+                <!--<li><a href="#" id='profile'>Edit Profile</a></li>-->
                 <li><a href="user.php" id='userview' style="display:none">User View</a></li>
                 <li><a href="solver.php" id='solverview' style="display:none">Solver View</a></li>
                 <li><a href="manager.php" id='managerview' style="display:none">Manager View</a></li>
@@ -134,7 +137,10 @@
 	
 	
 ?>
-<div class="container">
+
+	<div class="container">
+      
+
 	<div class="col-md-12">
 		
 
@@ -143,7 +149,7 @@
 
 	<div class='panel panel-default'>
 		<div class='panel-heading'>
-			<h3 class='panel-title'><center><b>Issues Assigned To You</b></center></h3>
+			<h3 class='panel-title'><center><b>Issues Currently Assigned To You</b></center></h3>
 		</div>
 		<div class='panel-body'>
 		<table class='table table-hover'>
@@ -168,19 +174,19 @@
 		while($r = mysqli_fetch_array($result, MYSQL_NUM)) {
 			echo ("
 		<tr>
-			<td>$r[0]</td><td>$r[3]</td><td>$r[2]</td><td>$r[1]</td>
+			<td>$r[0]</td><td>$r[3]<br><button type='button' class='btn btn-primary' title='Description' data-toggle='popover' data-trigger='focus' data-content='$r[5]'>Description</button></td><td>$r[2]</td><td>$r[1]</td>
 			<td>
-				<ul>
-				<li><button type='button' class='btn btn-primary' title='Description' data-toggle='popover' data-trigger='focus' data-content='$r[5]'>Description</button></li>
-				<li><a href='#'>Issue_History</a></li>
-				<li>
-					<form method=post name='takeactionform' action='takeAction.php'>
+				<form method=post name='historyform' action='history.php'>
+					<input type=hidden name='issueID' value='$r[0]'>
+					<input type=hidden name='userID' value='$uid'>
+					<input type=hidden name='landingFrom' value='solver'>
+					<input type=submit value='Issue History' class='btn btn-primary'>
+				</form>
+				<form method=post name='takeactionform' action='takeAction.php'>
 					<input type=hidden name='issueID' value='$r[0]'>
 					<input type=hidden name='solverID' value='$uid'>
 					<input type=submit value='Take Action' class='btn btn-primary'>
-					</form>
-				</li>
-				</ul>
+				</form>
 			</td>
 		</tr>
 			");
@@ -221,15 +227,46 @@
 		while($r = mysqli_fetch_array($result, MYSQL_NUM)) {
 			$issue_id = $r[4];
 			
-			$query = "SELECT subject from issues WHERE issue_id='$issue_id'";
+			$query = "SELECT subject, description from issues WHERE issue_id='$issue_id'";
 			$resss = $conn->query($query);
 			$rowww = $resss->fetch_assoc();
 			$subject = $rowww["subject"];
+			$description = $rowww["description"];
 		
 			$actionTaken = "Action ??";
+			$whichActionQuery = "select * from issue_transactions where trans_id = (select max(trans_id) from issue_transactions where user_id = '$uid' AND issue_id='$issue_id')";
+			$whichActionResult = mysqli_query($conn, $whichActionQuery) or die(mysqli_error($conn));
+			
+			if(mysqli_num_rows($whichActionResult) > 0) {
+				$rowww = mysqli_fetch_array($whichActionResult);
+				$actionTakenNum = $rowww["new_issue_status"];
+				if($actionTakenNum === '0') {
+					$delegatedTo = $rowww["delegatedTo"];
+					$delegatedOn = $rowww["trans_time"];
+					$actionTaken = "Delegated to ".$delegatedTo." on ".$delegatedOn;
+				} else {
+					$solvedOn = $rowww["trans_time"];
+					$actionTaken = "Solved on ".$solvedOn;
+				}
+			} else {
+				$actionTaken = "Pending<br>"."<form method=post name='takeactionform2' action='takeAction.php'>
+					<input type=hidden name='issueID' value='$issue_id'>
+					<input type=hidden name='solverID' value='$uid'>
+					<input type=submit value='Take Action' class='btn btn-primary'>
+				</form>";
+			}
+
+			
 			echo ("
 		<tr>
-			<td>$issue_id</td><td>$subject</td><td>$r[1]</td><td>$actionTaken</td><td>More</td>
+			<td>$issue_id</td><td>$subject<br><button type='button' class='btn btn-primary' title='Description' data-toggle='popover' data-trigger='focus' data-content='$description'>Description</button></td><td>$r[1]</td><td>$actionTaken</td><td>
+				<form method=post name='historyform2' action='history.php'>
+					<input type=hidden name='issueID' value='$issue_id'>
+					<input type=hidden name='userID' value='$uid'>
+					<input type=hidden name='landingFrom' value='solver'>
+					<input type=submit value='Issue History' class='btn btn-primary'>
+				</form>
+			</td>
 		</tr>
 			");
 		}

@@ -77,7 +77,7 @@
         <div id="navbarCollapse" class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
                 <li><a href="#" style="display:none" id="issue_btn">Raise New Issue</a></li>
-                <li><a href="#" id='profile'>Edit Profile</a></li>
+                <!--<li><a href="#" id='profile'>Edit Profile</a></li>-->
                 <li><a href="user.php" id='userview'>User View</a></li>
                 <li><a href="solver.php" id='solverview'>Solver View</a></li>
                 <li><a href="manager.php" id='managerview' style="display:none">Manager View</a></li>
