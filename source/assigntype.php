@@ -1,0 +1,192 @@
+<?php include("header.php"); include("constants.php");  ?>
+
+
+<script type="text/javascript">
+    $(document).ready(function(){
+      $("li").mouseover(function(){
+      	$(this).addClass("active");
+      });
+      $("li").mouseout(function(){
+      	$(this).removeClass("active");
+      });
+      $('[data-toggle="popover"]').popover();
+      $("#issue_btn").click(function(){
+        $("#raise_issue").show(200);
+      });
+      $("#close").click(function(){ // Do ---> clear all the fields
+        $("#raise_issue").hide();
+      });
+      $("#update").click(function(){ // ???
+        $("#row3").show(200);
+      });
+      $("#request_priv").click(function(){ // ???
+        $("#row4").show(200);
+      });
+      $("#subject").focusin(function(){
+        $(this).css("background-color", "#FFFFCC");
+      });
+      $("#subject").focusout(function(){
+        $(this).css("background-color", "#FFFFFF");
+        if ( $(this).val() == '' ) {
+            $("#p1").html("* This field should not be blank"); // Check: Where is p1 ???
+        } 
+        else
+        {
+          $("#p1").html("");
+        }
+      });
+      $("select").focusout(function(){
+        if ( $(this).val() == null ) {
+            $("#p2").html("* This should not be blank"); // Check/ Do: Add for p22
+        } 
+        else
+        {
+          $("#p2").html("");
+        }
+      });
+      $("#textarea").focusout(function(){
+        $(this).css("background-color", "#FFFFFF");
+        if ( $(this).val() == '' ) {
+            $("#p3").html("* This field should not be blank"); // Check: Where is p3 ???
+        } 
+        else
+        {
+          $("#p3").html("");
+        }
+      });
+    });
+</script>
+<?php
+
+if(isset($_COOKIE["uid"])) { // First If
+
+	$uid = $_COOKIE["uid"];
+	$conn = mysqli_connect(DBSERVER, USER, PASSWORD, DATABASE);
+	$result = mysqli_query($conn,"SELECT full_name from users where user_id='$uid'");
+	$row = mysqli_fetch_array($result);
+	$full_name = $row["full_name"];
+
+?>
+<div class="bs-example" style="margin-top: -20px;">
+    <nav role="navigation" class="navbar navbar-default">
+        <div class="navbar-header">
+            <button type="button" data-target="#navbarCollapse" data-toggle="collapse" class="navbar-toggle">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+        </div>
+        <div id="navbarCollapse" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="#" style="display:none" id="issue_btn">Raise New Issue</a></li>
+                <!-- <li><a href="#" id='profile'>Edit Profile</a></li> -->
+                <li><a href="user.php" id='userview'>User View</a></li>
+                <li><a href="solver.php" id='solverview'>Solver View</a></li>
+                <li><a href="manager.php" id='managerview' style="display:none">Manager View</a></li>
+            </ul>
+            
+            <ul class="nav navbar-nav navbar-right">
+            	<li><a href="#"><?php echo ("Welcome ".$full_name) ?></a></li>
+                <li><a href="logout.php">Sign Out</a></li>
+            </ul>
+        </div>
+    </nav>
+</div>
+
+<?php 
+
+	// This page sets type, assigns to a solver, and goes back to manager.php
+
+	$issue_id = $_POST["issueID"];
+	$new_type = $_POST["assigntype"];
+	// 1 - issues - update type and curr deleg and history items
+	// 2 - curr issues with solvers - add one to solver, subtract one from Manager
+	// 3 - issue transactions - add new entry with trans type 9
+	
+
+	// First Decide who to assign to
+		$query = "SELECT t1.user_id
+				FROM CurrentIssuesWithSolvers AS t1, solvers_issueTypes AS t2
+				WHERE  t1.user_id = t2.user_id AND t2.type =  '$new_type' AND t1.cur_issues = ( 
+					SELECT MIN( cur_issues ) 
+					FROM CurrentIssuesWithSolvers AS t1, solvers_issueTypes AS t2
+					WHERE t1.user_id = t2.user_id
+					AND t2.type =  '$new_type' )";
+				$result = mysqli_query($conn, $query);
+				$r = mysqli_fetch_array($result, MYSQL_NUM);
+				$newDeleg = $r[0];
+	// Decided who to assign to, and stored in $currDelegTo
+
+	// Start 1 - type, currDelegTo_uid, prevDelegTo_uid, prevComment, issue Hist 4 things, 
+	
+	
+
+	
+		// $newDeleg = $_POST["newDeleg"];		
+		$comments = "Type Assigned as ".$new_type;
+		$timeNow = date('Y-m-d H:i:s');
+		
+		// In issues: Update type, currDeleg, Prev_Deleg, prevComment
+		$query = "UPDATE issues SET type='$new_type', currDelegTo_uid='$newDeleg', prevDelegTo_uid='$uid',
+				prevComment='$comments'
+				WHERE issue_id='$issue_id'";
+		$result = mysqli_query($conn, $query);
+
+		$hist_time = $timeNow.";";
+		$hist_stat = "0".";";
+		$hist_dele = $newDeleg.";";
+		$hist_comm = $comments.";";
+
+		// and also in issues: update issue history
+		$query = "UPDATE issues SET issueHist_TimeStamps=concat(issueHist_TimeStamps,'$hist_time'), 
+						issueHist_Statuses=concat(issueHist_Statuses,'$hist_stat'), 
+						issueHist_Delegatees=concat(issueHist_Delegatees,'$hist_dele'),
+						issueHist_Comments=concat(issueHist_Comments,'$hist_comm')
+					WHERE issue_id='$issue_id'";
+		$result = mysqli_query($conn, $query);
+
+	// Start 2 - curr issues with solvers - add one to solver, subtract one from Manager
+		// required for update in curr_issues
+		$subquery = "SELECT cur_issues from CurrentIssuesWithSolvers WHERE user_id='$uid'";
+		$subresult = mysqli_query($conn, $subquery);
+		$subrow = mysqli_fetch_array($subresult, MYSQL_NUM);
+		$old_cur_issues = $subrow[0];
+		$new_cur_issues = $old_cur_issues - 1;
+		// In cur_issues: Decrement curr issues 
+		$query = "UPDATE CurrentIssuesWithSolvers SET cur_issues='$new_cur_issues' WHERE user_id='$uid'";
+		$result = mysqli_query($conn, $query);
+
+		$subquery = "SELECT cur_issues from CurrentIssuesWithSolvers WHERE user_id='$newDeleg'";
+		$subresult = mysqli_query($conn, $subquery);
+		$subrow = mysqli_fetch_array($subresult, MYSQL_NUM);
+		$old_cur_issues = $subrow[0];
+		$new_cur_issues = $old_cur_issues + 1;
+		// In cur_issues: Increment curr issues
+		$query = "UPDATE CurrentIssuesWithSolvers SET cur_issues='$new_cur_issues' WHERE user_id='$newDeleg'";
+		$result = mysqli_query($conn, $query);
+
+
+	// Start 3 - issue transactions - add new entry with trans type 9
+		$query = "INSERT into issue_transactions (trans_time, user_id, trans_type, issue_id, 
+								new_issue_status, new_issue_comments, delegatedTo)
+				values('$timeNow', '$uid', 9, '$issue_id', 0, '$comments', '$newDeleg')"; // trans_type 9 => Assign Type
+		
+		$result = mysqli_query($conn, $query);
+
+?>
+
+
+<?php
+	mysqli_close($conn);
+
+	header('location:manager.php');
+
+	} // end First if
+?>
+	
+</body>
+</html>
+
+

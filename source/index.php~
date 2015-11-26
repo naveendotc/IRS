@@ -42,7 +42,7 @@
 						<p id="pwd" style="color:red"></p>
 						<br>
 						<p  style="text-align:right"><a href="#" data-toggle="modal" data-target="#myModal">Forgot Password ?</a></button></p>
-						<center><input type="submit" name="submit" value="Sign In" class="btn btn-block btn-primary" style="font-size:18px;font-weight:700;"/><br><a href="register.php" class="btn btn-block btn-success" style="font-size:18px;font-weight:700;">Register</a></center>
+						<center><input type="submit" name="submit" value="Sign In" class="btn btn-block btn-primary" style="font-size:16px;font-weight:700;"/><br><a href="register.php" class="btn btn-block btn-success" style="font-size:16px;font-weight:700;">Register</a></center>
 
 					</div>	
 				</div>

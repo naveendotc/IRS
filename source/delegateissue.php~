@@ -147,7 +147,7 @@
 						issueHist_Statuses=concat(issueHist_Statuses,'$hist_stat'), 
 						issueHist_Delegatees=concat(issueHist_Delegatees,'$hist_dele'),
 						issueHist_Comments=concat(issueHist_Comments,'$hist_comm')
-					WHERE issue_id='$issue_id'";
+						WHERE issue_id='$issue_id'";
 		$result = mysqli_query($conn, $query);
 		
 

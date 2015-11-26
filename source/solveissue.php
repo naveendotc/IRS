@@ -135,6 +135,21 @@
 				WHERE issue_id='$issue_id'";
 		$result = mysqli_query($conn, $query);
 
+		$hist_time = $timeNow.";";
+		$hist_stat = "1".";";
+		$hist_dele = "Solved".";";
+		$hist_comm = $comments.";";
+
+		// and also in issues: update issue history
+		$query = "UPDATE issues SET issueHist_TimeStamps=concat(issueHist_TimeStamps,'$hist_time'), 
+						issueHist_Statuses=concat(issueHist_Statuses,'$hist_stat'), 
+						issueHist_Delegatees=concat(issueHist_Delegatees,'$hist_dele'),
+						issueHist_Comments=concat(issueHist_Comments,'$hist_comm')
+					WHERE issue_id='$issue_id'";
+		$result = mysqli_query($conn, $query);
+		
+
+
 		//required for update in issue_transactions
 		
 

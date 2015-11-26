@@ -143,7 +143,7 @@ if(isset($_COOKIE["uid"])) { // First If
 						<option selected disabled value='Set Type As'>Set Type As</option>
 						<option value='Type-1'>Type-1</option>
 						<option value='Type-2'>Type-2</option>
-						<option value='Type-3'>Type-3</option>
+						<option value='Type-2'>Type-2</option>
 					</select>
 				</div>
 					<input type=hidden name='issueID' value='$r[0]'>

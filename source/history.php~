@@ -17,12 +17,6 @@
 </script>
 <script type="text/javascript">
     $(document).ready(function(){
-	$("li").mouseover(function(){
-              $(this).addClass("active");
-	      });
-	      $("li").mouseout(function(){
-	              $(this).removeClass("active");
-	      });
       $('[data-toggle="popover"]').popover();
       $("#issue_btn").click(function(){
         $("#raise_issue").show(200);
@@ -76,10 +70,11 @@
 	
 	// extract $uid and Set Connection to MySQL server
 	$uid = $_COOKIE["uid"];
-	if (!($uid == $_POST["solverID"])) { echo "Invalid Log In Priveleges"; // send this guy to log in page
+	if (!($uid == $_POST["userID"])) { echo "Invalid Log In Priveleges"; // send this guy to log in page
 					}
 	
 	$issue_id = $_POST["issueID"];
+	$landing_from = $_POST["landingFrom"];
 
 	$conn = mysqli_connect(DBSERVER, USER, PASSWORD, DATABASE);
 	$query = "";
@@ -195,6 +190,14 @@
 		$hist_delegs = $row[12];
 		$hist_comms = $row[13];
 	
+		$ar_times = preg_split("/[;]/", $hist_times); // last one empty
+		$ar_stats = preg_split("/[;]/", $hist_statuses);
+		$ar_deles = preg_split("/[;]/", $hist_delegs);
+		$ar_comms = preg_split("/[;]/", $hist_comms);
+		if(!( sizeof($ar_times) === sizeof($ar_stats) && sizeof($ar_stats) === sizeof($ar_deles) && sizeof($ar_deles) === sizeof($ar_comms))) { 		echo("ERROR - All history arrays not equal<br>"); }
+		else { $l = sizeof($ar_times); } // includes last one which is blank
+
+		
 	
 	
 ?>
@@ -209,30 +212,45 @@
 
 	<div class='panel panel-default'>
 		<div class='panel-heading'>
-			<h3 class='panel-title'><center><b>Take Action On Issue ID <?php echo ("$issue_id"); ?></b></center></h3>
+			<h3 class='panel-title'><center><b>Issue History for Issue ID <?php echo ("$issue_id"." (Subject: ".$subject.")"); ?></b></center></h3>
 		</div>
 		<div class='panel-body'>
 		<table class='table table-hover'>
 		<tr>
-			<td>Issue Type</td><td><?php echo $type; ?></td>
+			<th>Time and Date</th><th>Event</th><th>Comments</th>
 		</tr>
-		<tr>
-			<td>Subject</td><td><?php echo $subject; ?></td>
-		</tr>
-		<tr>
-			<td>User</td><td><?php echo $raisedBy; ?></td>
-		</tr>
-		<tr>
-			<td>Registered On</td><td><?php echo $raisedTime; ?></td>
-		</tr>
-		<tr>
-			<td>Description</td><td><?php echo $description; ?></td>
-		</tr>
-		<tr>
-			<td>Issue Delegated To You From</td><td><?php echo $prevDelegTo; ?> <br>(Comments: 
-						<?php echo $prevComm; ?> )</td>
-		</tr>
-				
+
+<?php
+
+		//<tr>
+		//	<td>Time and Date</td><td>Delegatee</td><td>Action</td><td>Comments</td>
+		//</tr>
+		
+		for($iter = 0; $iter < $l - 1; $iter++) {
+			echo("<tr>
+				<td>$ar_times[$iter]</td>");
+			if($iter == 0) { echo("<td>Issue REGISTERED by $raisedBy<br>Issue ASSIGNED to $ar_deles[0]</td>");
+					echo("<td>NEW: <a href='#' title='Description' data-toggle='popover' data-trigger='focus' data-content='$description'>Description</a></td>");
+			}
+			else {
+				// write code here
+				if($ar_stats[$iter] === '0') { // Not yet solved, hence Delegated
+					$iterminus1 = $iter - 1;
+					echo("<td>Issue DELEGATED by $ar_deles[$iterminus1]<br>Issue ASSIGNED to $ar_deles[$iter]</td>");
+					echo("<td>".$ar_deles[$iterminus1].": $ar_comms[$iter]</td>");
+				} // end if
+				else { // solved
+					$iterminus1 = $iter - 1;
+					echo("<td>Issue SOLVED by $ar_deles[$iterminus1]</td>");
+					echo("<td>".$ar_deles[$iterminus1].": $ar_comms[$iter]</td>");
+					break;
+				}
+			} // end else
+		
+		} // end for
+		
+	
+?>			
 
 
 		</table>
@@ -241,42 +259,38 @@
 
 	</div> <!-- end div row2. Done with Show Open Issues Assigned To You. -->
 	
-	<div class="row" id="actionTable">
-		<div class="col-md-5">
-			<h3>Solve</h3>
-			<form name="solveform" action="solveissue.php" method='post'>
-				<?php echo("<input type=hidden name='issueID' value='$issue_id'>
-				<input type=hidden name='solverID' value='$uid'> "); ?>
-				Comment <input type=text class="form-control" name='comms' placeholder='Enter Comment or Remarks'><br>
-				<input type="Submit" value="Solve" class='btn btn-primary'>
+		<div class="wrapper" style="text-align:center;">
+			
+			
+			
+<?php
+	if($landing_from === "user") {
+		echo("
+			<form name=\"backform\" action=\"user.php\">
+				<input type=\"Submit\" value=\"Back\" class='btn btn-primary' style='margin:auto;display:block;'>
 			</form>
-		</div>
-		<div class="col-md-5">
-			<h3>Delegate</h3>
-			<form name="delegateform" action="delegateissue.php" method='post'>
-				<?php echo("<input type=hidden name='issueID' value='$issue_id'>
-				<input type=hidden name='solverID' value='$uid'> "); ?>
-				Delegate To <select class="form-control" id="sel1" name='newDeleg'>
-						<?php
-						$query = "SELECT user_id from solvers_issueTypes WHERE type='$type'";
-						$result = mysqli_query($conn, $query);
-						while($row = mysqli_fetch_array($result, MYSQL_NUM)) {
-							echo "<option>$row[0]</option>";
-						}
-    						?>
-					</select>
+			");
+	}
+	if($landing_from === "solver") {
+		echo("
+			<form name=\"backform\" action=\"solver.php\">
+				<input type=\"Submit\" value=\"Back\" class='btn btn-primary' style='margin:auto;display:block;'>
+			</form>
+			");
+	}
+	if($landing_from === "manager") {
+		echo("
+			<form name=\"backform\" action=\"manager.php\">
+				<input type=\"Submit\" value=\"Back\" class='btn btn-primary' style='margin:auto;display:block;'>
+			</form>
+			");
+	}
+	
+
+?>
 				
-				Comment <input type=text class="form-control" name='comms' placeholder='Enter Comment or Remarks'><br>
-				<input type="Submit" value="Delegate" class='btn btn-primary'>
-			</form>
 		</div>
-		<div class="col-md-1 col-md-offset-1">
-			<h3>Back</h3>
-			<form name="backform" action="solver.php">
-				<input type="Submit" value="Back" class='btn btn-primary'>
-			</form>
-		</div>
-	</div>
+		
 
 	</div> <!--- ending div col-md-10 -->
 	</div> <!-- ending div container -->

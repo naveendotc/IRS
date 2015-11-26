@@ -183,7 +183,7 @@
 				<form method=post name='takeactionform' action='takeAction.php'>
 					<input type=hidden name='issueID' value='$r[0]'>
 					<input type=hidden name='solverID' value='$uid'>
-					<a href='javascript:;' onclick='parentNode.submit();'>Take Action</a>
+					<a href='javascript:;' onclick='parentNode.submit();' style='border:1px solid black;'>Take Action</a>
 					<!-- <input type=submit value='Take Action' class='btn btn-primary'> -->
 				</form>
 			</td>

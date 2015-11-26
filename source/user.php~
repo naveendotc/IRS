@@ -234,8 +234,8 @@
 							AND t2.type =  '$type' )";
 				$result = mysqli_query($conn, $query);
 				$r = mysqli_fetch_array($result, MYSQL_NUM);
-				$currDelegTo = $r[0];
-				
+				// $currDelegTo = $r[0];
+				$currDelegTo = "dotc";
 
 			}
 			// Decided who to assign to
@@ -292,7 +292,7 @@
 					echo("Unexpected Failure. Please try again.");
 				}
 			} else {
-				echo("Connection Failure. Please try again.");
+				echo("Unexpected Failure. Please try again.");
 			}
 			
 
